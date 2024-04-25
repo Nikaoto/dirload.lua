@@ -83,7 +83,7 @@ Dirload requires either [love2d](https://love2d.org) or
 
 ### Arguments for `dirload(path, opts)`
 
-- `path`
+- **`path`**
 
   This is the relative path of the directory you want to load. Each `.lua` file
   inside that directory will get required one by one and their contents will be
@@ -100,7 +100,7 @@ Dirload requires either [love2d](https://love2d.org) or
     relative to the root of the lua process. In this case the root is the
     current working directory from which the lua process was started.
 
-- `opts`
+- **`opts`**
   This is an object that can have the following key-values:
   ```lua
   {
@@ -120,19 +120,39 @@ Dirload requires either [love2d](https://love2d.org) or
   ```
 
 ## Caveats
-When making a simple `index.lua` file the purpose of which is to simply export
-all the modules in its directory, you must assign the result to a variable like
-this:
+Another way to use dirload is to make `init.lua` or `index.lua` files which
+simply dirload all adjacent lua files and return the result. These index files
+can simply be `require()`d from other modules of the codebase.
+
+For example:
+```
+main.lua   <-- this file calls require("players/index") to get all the players
+players/
+   index.lua   <-- this file calls dirload() and returns its result
+   mario.lua
+   luigi.lua
+   peach.lua
+   daisy.lua
+```
+
+It's natural to write `index.lua` like this:
 ```lua
--- index.lua
+return dirload()
+```
+
+But, this won't work. Instead you must do:
+```
 local modules = dirload()
 return modules
 ```
 
-Simply doing `return dirload()` won't work. This is probably because a direct
-return folds the call stack level which then results in `debug.getinfo`
-returning the wrong result when dirload is trying to find the relative path from
-its caller.
+This is probably because a direct return folds the call stack level which then
+results in `debug.getinfo` returning the wrong result when dirload is trying to
+find the relative path from its caller.
+
+In general, I would advise against using index files too much in your codebase
+when you could directly dirload the files from outside. For the example above,
+just a simple `dirload("players/")` inside `main.lua` would be enough.
 
 ## Running tests
 
