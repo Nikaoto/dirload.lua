@@ -1,5 +1,6 @@
 # dirload.lua
-Load every `.lua` file in a given directory and return a table of each module.
+Require every `.lua` file in a given directory and return a table that contains
+each loaded module.
 
 ## Example
 If you have something like:
@@ -14,34 +15,21 @@ game/
     koopa_troopa.lua
     bullet_bill.lua
     hammer_bro.lua
-
-```
-
-Where each `.lua` file is a module that returns a table like:
-```lua
--- mario.lua
-local mario = { lives = 3, movespeed = 100 }
-
-function mario.jump()
-    -- ...
-end
-
-function mario.move()
-    -- ...
-end
-
-return mario
+  utils/
+    math.lua
+    physics.lua
 ```
 
 Ever just wanted to do this from `main.lua`?
 ```lua
-local players = dirload("players/")
-local enemies = dirload("enemies/")
+require("utils/*")
+local players = require("players/*")
+local enemies = require("enemies/*")
+```
 
-players.mario.move()
-enemies.goomba.spawn()
-
---[[ And we get:
+In addition to `utils/math` and `utils/physics` being loaded, you'd expect to
+get something like this:
+```
 players = {
     mario = {...},
     luigi = {...},
@@ -53,10 +41,30 @@ enemies = {
     bullet_bill = {...},
     hammer_bro = {...},
 }
---]]
 ```
 
-Well, with `dirload` you can.
+Well, with `dirload` you can!
+```lua
+-- from main.lua
+dirload("utils")
+local players = dirload("players")
+local enemies = dirload("enemies")
+
+-- The 3 lines above are equivalent to the code below
+require("utils/math")
+require("utils/physics")
+local players = {
+   mario = require("players/mario"),
+   luigi = require("players/luigi"),
+}
+local enemies = {
+   goomba = require("enemies/goomba"),
+   koopa_troopa = require("enemies/koopa_troopa"),
+   bullet_bill = require("enemies/bullet_bill"),
+   hammer_bro = require("enemies/hammer_bro"),
+}
+
+```
 
 ## Usage
 Copy `dirload.lua` into your codebase and do:
