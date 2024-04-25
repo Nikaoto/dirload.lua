@@ -6,7 +6,7 @@ each loaded module.
 If you have something like:
 ```
 game/
-  main.lua
+  main.lua  <-- currently executing file
   players/
     mario.lua
     luigi.lua
@@ -20,7 +20,7 @@ game/
     physics.lua
 ```
 
-Ever just wanted to do this from `main.lua`?
+Ever just wanted to do this?
 ```lua
 require("utils/*")
 local players = require("players/*")
@@ -49,8 +49,10 @@ Well, with `dirload` you can!
 dirload("utils")
 local players = dirload("players")
 local enemies = dirload("enemies")
+```
 
--- The 3 lines above are equivalent to the code below
+The 3 lines above are equivalent to the code below:
+```
 require("utils/math")
 require("utils/physics")
 local players = {
@@ -70,8 +72,7 @@ local enemies = {
 Copy `dirload.lua` into your codebase and do:
 ```lua
 local dirload = require("dirload")
-
-local modules = dirload("my_directory_with_modules/")
+local modules = dirload("my_directory_with_modules")
 ```
 
 Dirload requires either [love2d](https://love2d.org) or
@@ -80,43 +81,44 @@ Dirload requires either [love2d](https://love2d.org) or
    - `lfs.dir()`
    - `lfs_ffi.dir()`
 
-### Arguments
-The function takes 2 arguments `dirload(path, opts)`.
+### Arguments for `dirload(path, opts)`
 
-#### `path`
-This is the relative path of the directory you want to load. Each `.lua` file
-inside that directory will get required one by one and their contents will be
-put into a table and returned.
+- `path`
 
-- Directory separators must be forward slashes (`"dir0/dir1"`)
+  This is the relative path of the directory you want to load. Each `.lua` file
+  inside that directory will get required one by one and their contents will be
+  put into a table and returned.
 
-- If this is `nil` or `"."` or `"./"` or `""` then the current directory will be
-  loaded. Obviously, the calling file will get ignored during the loading so we
-  don't end up with an infinite loop that keeps dirloading the same file.
+  - Directory separators must be forward slashes (`"dir0/dir1"`)
 
-- A leading slash (i.e. `"/dir1"`) will tell dirload to load the directory
-  relative to the root of the lua process. In other words, the root is the
-  current working directory, from which the lua process was started.
+  - If `path` is `nil` or `"."` or `"./"` or `""` then the current directory
+    will be loaded. Obviously, the calling file will get ignored during the
+    loading so we don't end up with an infinite loop that keeps dirloading the
+    same file.
 
-#### `opts`
-This is an object that can have the following key-values:
-```lua
-{
-   -- A list of filenames to ignore (".lua" suffix is required!)
-   ignore = {"something.lua", "another.lua"},
+  - A leading slash (i.e. `"/dir1"`) will tell dirload to load the directory
+    relative to the root of the lua process. In this case the root is the
+    current working directory from which the lua process was started.
 
-   -- Called when a module is loaded
-   on_load = function(path, file_name, module)
-      print(path, file_name, module)
-   end,
+- `opts`
+  This is an object that can have the following key-values:
+  ```lua
+  {
+     -- A list of filenames to ignore (".lua" suffix is required!)
+     ignore = {"something.lua", "another.lua"},
 
-   -- Called when an error is encountered while loading a module
-   on_error = function(path, file_name, err)
-      print(path, file_name, err)
-   end,
-}
-```
-  
+     -- Called when a module is loaded
+     on_load = function(path, file_name, module)
+        print(path, file_name, module)
+     end,
+
+     -- Called when an error is encountered while loading a module
+     on_error = function(path, file_name, err)
+        print(path, file_name, err)
+     end,
+  }
+  ```
+
 ## Caveats
 When making a simple `index.lua` file the purpose of which is to simply export
 all the modules in its directory, you must assign the result to a variable like
