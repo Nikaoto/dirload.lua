@@ -1,6 +1,7 @@
 # dirload.lua
 Load every `.lua` file in a given directory and return a table of each module.
 
+## Example
 If you have something like:
 ```
 game/
