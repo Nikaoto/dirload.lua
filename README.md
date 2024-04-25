@@ -22,13 +22,13 @@ game/
 
 Ever just wanted to do this?
 ```lua
-require("utils/*")
 local players = require("players/*")
 local enemies = require("enemies/*")
+require("utils/*")
 ```
 
 In addition to `utils/math` and `utils/physics` being loaded, you'd expect to
-get something like this:
+get tables like this:
 ```
 players = {
     mario = {...},
@@ -45,16 +45,14 @@ enemies = {
 
 Well, with `dirload` you can!
 ```lua
--- from main.lua
-dirload("utils")
+-- in main.lua
 local players = dirload("players")
 local enemies = dirload("enemies")
+dirload("utils")
 ```
 
 The 3 lines above are equivalent to the code below:
-```
-require("utils/math")
-require("utils/physics")
+```lua
 local players = {
    mario = require("players/mario"),
    luigi = require("players/luigi"),
@@ -65,7 +63,8 @@ local enemies = {
    bullet_bill = require("enemies/bullet_bill"),
    hammer_bro = require("enemies/hammer_bro"),
 }
-
+require("utils/math")
+require("utils/physics")
 ```
 
 ## Usage
@@ -83,11 +82,9 @@ Dirload requires either [love2d](https://love2d.org) or
 
 ### Arguments for `dirload(path, opts)`
 
-- **`path`**
-
-  This is the relative path of the directory you want to load. Each `.lua` file
-  inside that directory will get required one by one and their contents will be
-  put into a table and returned.
+- **`path`** - the relative path of the directory you want to load. Each `.lua`
+  file inside that directory will get required one by one and their contents
+  will be put into a table and returned.
 
   - Directory separators must be forward slashes (`"dir0/dir1"`)
 
@@ -100,21 +97,18 @@ Dirload requires either [love2d](https://love2d.org) or
     relative to the root of the lua process. In this case the root is the
     current working directory from which the lua process was started.
 
-- **`opts`**
-  This is an object that can have the following key-values:
+- **`opts`** - a table that can have the following key-values:
   ```lua
   {
      -- A list of filenames to ignore (".lua" suffix is required!)
-     ignore = {"something.lua", "another.lua"},
+     ignore = {"something.lua", "another.lua", ...},
 
      -- Called when a module is loaded
      on_load = function(path, file_name, module)
-        print(path, file_name, module)
      end,
 
      -- Called when an error is encountered while loading a module
      on_error = function(path, file_name, err)
-        print(path, file_name, err)
      end,
   }
   ```
@@ -135,24 +129,26 @@ players/
    daisy.lua
 ```
 
-It's natural to write `index.lua` like this:
+It's natural to write `index.lua` with a single line like this:
 ```lua
+-- index.lua
 return dirload()
 ```
 
 But, this won't work. Instead you must do:
-```
+```lua
+-- index.lua
 local modules = dirload()
 return modules
 ```
 
-This is probably because a direct return folds the call stack level which then
-results in `debug.getinfo` returning the wrong result when dirload is trying to
-find the relative path from its caller.
+This is because a direct return folds the call stack level which then results in
+`debug.getinfo` returning the wrong result when dirload is trying to find the
+relative path from its caller.
 
 In general, I would advise against using index files too much in your codebase
 when you could directly dirload the files from outside. For the example above,
-just a simple `dirload("players/")` inside `main.lua` would be enough.
+just a simple `dirload("players/")` inside `main.lua` would've been enough.
 
 ## Running tests
 
@@ -162,14 +158,16 @@ cd test/
 love .
 ```
 
+This will use built-in `love.filesystem` module.
+
 ### LuaJIT
 ```
 cd test/
 luajit run_tests.lua
 ```
 
-This will use the `lfs_ffi.lua` module from inside the `test/` directory, so
-running it with just lua won't work, it needs luajit's ffi.
+This will use the `lfs_ffi.lua` module from the `test/` directory, so running
+the tests with just lua won't work, it needs luajit's ffi.
 
 ## License
 MIT
