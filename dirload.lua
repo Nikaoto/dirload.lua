@@ -40,7 +40,7 @@ end
 local function get_dirload_caller_path()
    local path = debug.getinfo(3, "S").source:sub(2)
    local dir = path:match("(.*/)") or "/"
-   local file = path:match("[^/]+/(.*)$") or path
+   local file = path:match("([^/]+)$") or path
    local norm_dir, _ = dir:gsub("\\", "/")
 
    -- Remove leading "./"
