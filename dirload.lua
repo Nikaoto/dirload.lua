@@ -127,10 +127,10 @@ local function dirload(rel_dir_path, opts)
          local succ, ret = pcall(require, path .. module_name)
          if succ then
             index[module_name] = ret
-            if opts.on_load then opts.on_load(path, file, ret) end
+            if opts.on_load then opts.on_load(ret, module_name, file, path) end
          else
             print(string.format("Error loading \"%s\": %s", file, ret))
-            if opts.on_error then opts.on_error(path, file, ret) end
+            if opts.on_error then opts.on_error(ret, module_name, file, path) end
          end
       end
    end
