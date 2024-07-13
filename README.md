@@ -2,6 +2,12 @@
 Require every `.lua` file in a given directory and return a table that contains
 each loaded module.
 
+If you ever wanted to just do:
+```
+local libs = require("libs/*")
+```
+dirload can help you do that.
+
 ## Example
 If you have something like:
 ```
