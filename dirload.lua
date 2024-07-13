@@ -3,6 +3,11 @@
 -- Uses love.filesystem or lfs (luafilesystem). Whichever is available.
 
 local function get_directory_items(path, caller_dir)
+   -- Use filelib
+   if filelib and filelib.dirlist then
+      return filelib.dirlist(path, caller_dir)
+   end
+
    -- Use love.filesystem
    if love and love.filesystem and love.filesystem.getDirectoryItems then
       return love.filesystem.getDirectoryItems(path)
@@ -11,12 +16,10 @@ local function get_directory_items(path, caller_dir)
    -- Use luafilesystem
    local lfs = lfs or lfs_ffi
    if lfs then
-      local cwd = lfs.currentdir()
-
       if path:sub(1, 1) == "/" or path == "" then
-         path_for_lfs = cwd .. path
+         path_for_lfs = lfs.currentdir() .. path
       elseif path == "." then
-         path_for_lfs = cwd .. caller_dir
+         path_for_lfs = lfs.currentdir() .. caller_dir
       end
 
       local dirlisting = {}
@@ -36,7 +39,7 @@ end
 
 -- Returns the directory and the file name.
 -- The returned directory path is relative to the directory that lua/love2d was
--- launched from. That directory will be returned as the root "/".
+-- launched from. The latter directory will be returned as the root "/".
 local function get_dirload_caller_path()
    local path = debug.getinfo(3, "S").source:sub(2)
    local dir = path:match("(.*/)") or "/"
@@ -107,15 +110,6 @@ local function dirload(rel_dir_path, opts)
    -- Prevents requiring the same file that called dirload(). Also prevents
    -- ignoring a file with the same name as the caller in a different directory
    local check_caller_file_collision = (caller_dir == path)
-
-   --[[
-   print("path:", path)
-   print("caller_dir:", caller_dir)
-   print("rel_dir_path:", rel_dir_path)
-   print(inspect(get_directory_items(path, caller_dir)))
-   print()
-   print()
-   --]]
 
    local index = {}
    for _, file in pairs(get_directory_items(path, caller_dir)) do
