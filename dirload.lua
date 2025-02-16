@@ -16,6 +16,7 @@ local function get_directory_items(path, caller_dir)
    -- Use luafilesystem
    local lfs = lfs or lfs_ffi
    if lfs then
+      local path_for_lfs = nil
       if path:sub(1, 1) == "/" or path == "" then
          path_for_lfs = lfs.currentdir() .. path
       elseif path == "." then
